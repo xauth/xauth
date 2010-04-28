@@ -105,6 +105,6 @@ We've tried to keep the code brief (unlike this documentation). The xauth.js fil
 
 ### More Resources ###
 
-Discuss XAuth at http://groups.google.com/group/xauth
-Learn even more at http://xauth.org/info
-Check out code at http://github.com/xauth/xauth/
+*  Discuss XAuth at [http://groups.google.com/group/xauth](http://groups.google.com/group/xauth)
+*  Learn even more at [http://xauth.org/info](http://xauth.org/info)
+*  Check out code at [http://github.com/xauth/xauth/](http://github.com/xauth/xauth/)
