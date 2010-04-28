@@ -1,0 +1,453 @@
+<!--
+	Copyright 2010 Meebo Inc.
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	    http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<!doctype html>
+<html>
+<head>
+<title>XAuth Specifications</title>
+<script type="text/javascript" src="http://xauth.org/xauth.js"></script>
+<script type="text/javascript">
+var libraryURL = 'http://xauth.org/xauth.js'
+
+function onbodyload() {
+	var copyme = document.getElementById('code_copy');
+	copyme.value = '<scr' + 'ipt type="text/javascript" src="' + libraryURL + '"></scr' + 'ipt>';
+
+	generateToken();
+	generateExpire();
+	generateRetrieve();
+}
+
+function generateToken() {
+	var token = (Math.floor(Math.random()*10000000000)).toString(16) 
+		+ (Math.floor(Math.random()*10000000000)).toString(16)
+		+ (Math.floor(Math.random()*10000000000)).toString(16);
+	document.getElementById('token').value = token;
+	generateExtendCode();
+}
+
+function generateExpire(secondsToExpire) {
+	var seconds = secondsToExpire || 24*60*60; // Default to 24 hours
+	var expire = (new Date().getTime() + seconds*1000);
+	document.getElementById('expire').value = expire;
+	generateExtendCode();
+}
+
+function generateRetrieve() {
+	document.getElementById('retrieve').value = 'www.meebo.com, www.youface.com, ' + document.domain;
+	generateRetrieveCode();
+}
+
+function runCode(methodName) {
+	var code = document.getElementById('code_' + methodName).value;
+	try {
+		eval(code);
+	} catch(e) {
+		document.getElementById('results_' + methodName).innerHTML += (e.toString() + "<br/>");
+	}
+}
+
+function extendCallback(responseObj) {
+	var cmd = responseObj.cmd;
+	document.getElementById('results_extend').innerHTML += ('XAuth' + cmd.substr(5) + " succeeded! Response JSON:<br/><pre>" + JSON.stringify(responseObj, null, '  ') + "</pre>");
+}
+
+function expireCallback(responseObj) {
+	var cmd = responseObj.cmd;
+	document.getElementById('results_expire').innerHTML += ('XAuth' + cmd.substr(5) + " succeeded! Response JSON:<br/><pre>" + JSON.stringify(responseObj, null, '  ') + "</pre>");
+}
+
+function retrieveCallback(responseObj) {
+	var results = responseObj.tokens;
+	var cmd = responseObj.cmd.substr(5);
+	var tokens = '';
+	for(var id in results) {
+		tokens += '<tr><td>' + id + '</td><td>' + results[id]['token'] + '</td></tr>';
+	}
+	if(tokens == '') {
+		tokens = 'No Tokens Available to you right now';
+	} else {
+		tokens = '<table><tr><th>Domain</th><th>Token</th></tr>' + tokens + '</table>'
+	}
+	
+	tokens += "<br>Response JSON:<br/><pre>" + JSON.stringify(responseObj, null, '  ') + "</pre>";
+	document.getElementById('results_retrieve').innerHTML = tokens;
+}
+
+
+function generateExtendCode() {
+	var token = document.getElementById('token').value;
+	var expire = document.getElementById('expire').value;
+	var session = document.getElementById('session').checked;
+	var extend = document.getElementById('extend').value;
+	var extendList = '["' + extend.replace(/\s+/g,'').split(',').join('", "') + '"]';
+	var code = document.getElementById('code_extend');
+	code.value = 'XAuth.extend({\n  token: "' + token + '",\n'
+		+ '  expire: ' + expire + ',\n'
+		+ (session?'  session: true,\n':'')
+		+ '  extend: ' + extendList + ',\n'
+		+ '  callback: extendCallback\n'
+		+ '});';
+}
+
+function generateRetrieveCode() {
+	var retrieve = document.getElementById('retrieve').value;
+	var retrieveList = '["' + retrieve.replace(/\s+/g,'').split(',').join('", "') + '"]';
+	var code = document.getElementById('code_retrieve');
+	code.value = 'XAuth.retrieve({\n  retrieve: ' + retrieveList + ',\n'
+		+ '  callback: retrieveCallback\n'
+		+ '});';
+}
+
+</script>
+
+<style>
+body {
+	padding: 0 30px;
+	margin: 0;
+	font-family: "Helvetica Neue", Helvetica, Arial;
+}
+
+.body {
+	width: 1000px;
+	margin: auto;
+}
+
+button {
+	font-size: 12px;
+}
+
+.navigation {
+	margin-right: 20px;
+	float: left;
+	line-height: 1.5em;
+	padding: 0 20px 20px;
+	background: #EEE;
+}
+
+.navigation ul {
+	padding: 0;
+	margin: 0;
+}
+
+.navigation li {
+	display: block;
+}
+
+.content {
+	float: left;
+	width: 800px;
+}
+
+.rightheader {
+	display: block;
+	float: right;
+	text-align: right;
+}
+
+#domain {
+	color: #AAA;
+}
+
+.copyme {
+	background: #EEE;
+	padding: 10px;
+	font-size: 1.3em;
+	overflow: auto;
+}
+
+#copycode {
+	width: 50%;
+	border: 0;
+	display:block;
+	font-size: 1.3em;
+	width: 380px;
+	float: right;
+}
+
+#tokens table {
+	margin: 10px;
+	color: #AAA;
+}
+
+input {
+	border: 1px solid #AAA;
+	font-size: 13px;
+}
+
+input[type=text] {
+	width: 300px;
+}
+
+.method {
+	background: #F5F5F5;
+	overflow: auto;
+	margin-bottom: 20px;
+}
+
+.method .name {
+	background: #EEE;
+	padding: 10px;
+	font-size: 1.3em;
+}
+
+.method .params {
+	padding: 10px;
+	line-height: 1.5em;
+}
+
+.method .sandbox {
+	float: right;
+	padding: 20px;
+	background: #DDD;
+	width: 380px;
+	font-family: Courier;
+	font-size: 13px;
+	margin-left: 10px;
+}
+
+.method .sandbox textarea.code {
+	background: #DDD;
+	font-family: Courier;
+	border: 1px solid #DDD;
+	width: 100%;
+	font-size: 13px;
+}
+
+#code_extend {
+	height: 130px;
+}
+
+#code_expire {
+	height: 30px;
+}
+
+#code_retrieve {
+	height: 100px;
+}
+
+#code_copy {
+	height: 35px;
+}
+
+.method .sandbox textarea.code {
+	border-color: #000;
+	background: #EEE;
+}
+
+.method .sandbox .execute {
+	padding: 10px 0;
+}
+
+.method p {
+	line-height: 1.5em;
+}
+
+table.playground td {
+	padding: 4px 4px 4px 0;
+	vertical-align: top;
+	line-height: 1.5em;
+}
+
+table.spec td {
+	padding: 4px 4px 4px 0;
+	vertical-align: top;
+	line-height: 1.5em;
+	font-size: 12px;
+}
+
+table.spec th {
+	font-size:14px;
+}
+
+table.definitions th,
+table.definitions td {
+	vertical-align: top;
+	padding: 10px;
+}
+
+</style>
+
+</head>
+
+<body onload="onbodyload()">
+	<div class="body">
+		<div class="navigation">
+			<h2>XAuth</h2>
+			<ul>
+				<li><a href="/">Manage</a></li>
+				<li><a href="/info">Information</a></li>
+				<li><a href="/spec">Specification</a></li>
+			</ul>
+		</div>
+		<div class="content">
+			<div class="rightheader">
+				contact: <a href="mailto:xauth@meebo-inc.com&subject=xauth.org">xauth@meebo-inc.com</a><br>
+				<a href="http://groups.google.com/group/xauth">XAuth Discussion Group</a>
+			</div>
+			<h2>XAuth Spec</h2>
+			<p>XAuth is an open platform for extending authenticated user services across the web.
+
+			<div class="method definitions">
+				<div class="name">Definitions</div>
+				<div class="params">
+					<table class="definitions">
+						<tbody>
+							<tr><th>Extender</th> 
+							<td>the network service that wishes to enable their users to extend authenticated access to a limited set of services across other domains.  The extender publishes the XAuth Token.</td></tr> 
+							<tr><th>Retriever</th> 
+							<td>the service that wants to access an extender's XAuth Token.</td></tr> 
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="method">
+						<div class="name">Requirements</div>
+				<div class="params">
+				<ul>
+					<li>Extenders create a public token for use with XAuth  <b>(XAuth Token)</b> 
+					<li>XAuth only works in modern browsers that support specific HTML5 methods: window.postMessage and localStorage.  (IE8+, Safari4+, Chrome3+, FF3+)  
+					<li>Communication with XAuth domain in the browser will rely on window.postMessage to an iframe on XAuth.org
+					<li>Storage of sessions on the XAuth domain in the browser relies on local storage.
+					<li>User browser preferences restricting third party cookies may interfere and return an error code.
+				</ul>
+				</div>
+			</div>
+			<div class="method">
+				<div class="sandbox">
+				<b>Place this code in the head of your web page:</b><br>
+					<textarea class="code" id="code_copy">XAuth.extend();</textarea>
+				</div>
+				<div class="name">XAuth Embed Code</div>
+				<div class="params">
+					<p>XAuth is a very lightweight JavaScript library that an extender and a retriever will use.  It exposes three JavaScript functions: extend, expire, and retrieve.</p>
+				</div>
+			</div>
+			<div class="method">
+				<div class="sandbox">
+					<b>Sample Code Generator</b>:<br><table class="playground">
+						<tbody>
+							<tr>
+								<td>token:</td>
+								<td><input type="text" id="token" onkeyup="generateExtendCode()">
+									<br><button onclick="generateToken()">Generate Random token</button></td>
+							</tr>
+							<tr>
+								<td>expire:</td>
+								<td><input type="text" id="expire" onkeyup="generateExtendCode()">
+									<br><button onclick="generateExpire()">24 Hours From Now</button><button onclick="generateExpire(10)">10 Seconds From Now</button></td>
+							</tr>
+							<tr>
+								<td>session:</td>
+								<td><input type="checkbox" id="session" name="session" onkeyup="generateExtendCode()"  onclick="generateExtendCode()"><label for="session"> token expires with browser session</label></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>extend:</td>
+								<td><input type="text" id="extend" value="www.meebo.com, www.youface.com, *" onkeyup="generateExtendCode()"><br>Array of domain strings to allow read access</td>
+							</tr>
+						</tbody>
+					</table>
+					Sample Code:<br>
+					<textarea class="code" id="code_extend">XAuth.extend();</textarea>
+					<div class="execute"><button onclick="runCode('extend')">Run Sample Code</button></div>
+					Results:
+					<div class="results" id="results_extend"></div>
+				</div>
+				<div class="name">XAuth.extend()</div>
+				<div class="params">
+					<p>Called by an auth extender.  This method creates an iframe to xauth.org and then it uses window.postMessage to send this data to the iframe where it will be written to local storage.</p>
+					<table class="spec">
+						<tbody>
+							<th>Parameter</th><th>Behavior</th>
+				<tr><td height="44"><i>token</i></td> 
+					<td>(required) this is the XAuth token, created specifically for use with XAuth and used by an auth retriever to request additional services from the extender. <br>This token will be stored with the canonical domain as the key.</td></tr> 
+		        <tr><td><i>expire</i></td>
+					<td>(required) specifies the date/time when this token should expire as a JavaScript UTC timestamp Number. <p><strong>This number is in milliseconds.</strong></td></tr> 
+		        <tr><td><i>session</i></td>
+					<td>(optional) specifies whether the token should also be expired after the browser session has ended. Value is specified as a JavaScript Boolean.</td></tr> 
+		        <tr><td><i>extend</i></td>
+					<td>(required) specifies the list of domains that may retrieve this token.  XAuth will cache the domains specified in this file in local storage. Value is specified as a JavaScript Array of Strings. <p>The key will be the canonical domain 
+				<p><strong>You may use a wildcard "*" domain in the Array to allow all domains to retrieve the token.</strong></td></tr>
+		        <tr><td><i>callback</i></td>
+					<td>(optional) reference to a callback function</td></tr></tr> 
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Expire -->
+			<div class="method">
+				<div class="sandbox">
+					Sample Code:<br>
+					<textarea class="code" id="code_expire">XAuth.expire({callback: expireCallback});</textarea>
+					<div class="execute"><button onclick="runCode('expire')">Run Sample Code</button></div>
+					Results:
+					<div class="results" id="results_expire"></div>
+				</div>
+				<div class="name">XAuth.expire()</div>
+				<div class="params">
+				<p>Called by an auth extender that wishes to expire a user's xauth token.  Call this when the user explicitly signs out from the auth extender.  This will expire the token in local storage.</p>
+				<p></p>
+
+				</div>
+			</div>
+
+			<!-- Retrieve -->
+			<div class="method">
+				<div class="sandbox">
+				<b>Sample Code Generator</b>:<br>
+				<table class="playground">
+						<tbody>
+							<tr>
+								<td>retrieve:</td>
+								<td><input type="text" id="retrieve" value="www.meebo.com, www.youface.com" onkeyup="generateRetrieveCode()"><br>Array of domain strings to query</td>
+							</tr>
+						</tbody>
+					</table>
+					Sample Code:<br>
+					<textarea class="code" id="code_retrieve">XAuth.retrieve();</textarea>
+					<div class="execute"><button onclick="runCode('retrieve')">Run Sample Code</button></div>
+					Results:
+					<div class="results" id="results_retrieve"></div>
+				</div>
+				<div class="name">XAuth.retrieve()</div>
+				<div class="params">
+					<p>Called by an auth extender that wishes to retrieve XAuth tokens.</p>
+					<table class="spec">
+						<tbody>
+							<th>Parameter</th><th>Behavior</th>
+				<tr><td height="44"><i>retrieve</i></td> 
+					<td>(required) specifies a list of domains for which the retriever is interested in. If any of the domains have extended to your domain, their token (if currently available and not expired) will be included in the response passed to the callback.
+					<p><strong>You may NOT use a wildcard "*" domain.</strong></td></tr> 
+		        <tr><td><i>callback</i></td>
+					<td>(required) specifies a callback function to receive the XAuth tokens.  XAuth will call this function passing in a response object with 'tokens' specifying the available tokens and their expiration timestamps keyed by the canonical domain:
+					<br><i>{tokens: {domain: {token: token, expire: expire}, ...} }</i></td></tr> 
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+	try {
+	var pageTracker = _gat._getTracker("UA-3931792-8");
+	pageTracker._trackPageview();
+	} catch(err) {}</script></body>
+</html>

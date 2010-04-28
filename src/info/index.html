@@ -1,0 +1,206 @@
+<!--
+	Copyright 2010 Meebo Inc.
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	    http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<!doctype html>
+<html>
+<head>
+<title>XAuth Info</title>
+<style>
+body {
+	padding: 0 30px;
+	margin: 0;
+	font-family: "Helvetica Neue", Helvetica, Arial;
+}
+
+.body {
+	width: 1000px;
+	margin: auto;
+}
+
+.navigation {
+	margin-right: 20px;
+	float: left;
+	line-height: 1.5em;
+	padding: 0 20px 20px;
+	background: #EEE;
+}
+
+.navigation ul {
+	padding: 0;
+	margin: 0;
+}
+
+.navigation li {
+	display: block;
+}
+
+.content {
+	float: left;
+	width: 800px;
+}
+
+ul.blogs {
+	line-height: 1.4em;
+}
+
+.rightheader {
+	display: block;
+	float: right;
+	text-align: right;
+}
+
+.method {
+	background: #F5F5F5;
+	overflow: auto;
+	margin-bottom: 20px;
+}
+
+.method .name {
+	background: #EEE;
+	padding: 10px;
+	font-size: 1.3em;
+}
+
+.method .params {
+	padding: 10px;
+}
+
+.method .sandbox {
+	float: right;
+	padding: 20px;
+	background: #DDD;
+	width: 400px;
+	font-family: Courier;
+	margin-left: 10px;
+}
+
+.method .sandbox .code {
+	background: #DDD;
+	font-family: Courier;
+	border: 1px solid #DDD;
+	width: 100%;
+}
+
+#code_extend {
+	height: 150px;
+}
+
+#code_expire {
+	height: 50px;
+}
+
+#code_retrieve {
+	height: 120px;
+}
+
+#code_copy {
+	height: 52px;
+}
+
+.method .sandbox .code:hover {
+	border-color: #000;
+	background: #EEE;
+}
+
+.method .sandbox .execute {
+	padding: 20px 0;
+}
+
+table.playground td {
+	padding: 4px 4px 4px 0;
+	vertical-align: top;
+	line-height: 1.5em;
+}
+</style>
+</head>
+
+<body>
+	<div class="body">
+		<div class="navigation">
+			<h2>XAuth</h2>
+			<ul>
+				<li><a href="/">Manage</a></li>
+				<li><a href="/info">Information</a></li>
+				<li><a href="/spec">Specification</a></li>
+			</ul>
+		</div>
+		<div class="content">
+			<div class="rightheader">
+				contact: <a href="mailto:xauth@meebo-inc.com&subject=xauth.org">xauth@meebo-inc.com</a><br>
+				<a href="http://groups.google.com/group/xauth">XAuth Discussion Group</a>
+			</div>
+			<h2>Extended Authentication (XAuth)</h2>
+	
+			<div class="method">
+				<div class="name">Quick Introductions</div>
+				<div class="params">
+					<ul class="blogs">
+						<li><a target="_blank" href="http://blog.meebo.com/?p=2391">Introducing XAuth</a> - Meebo Dev Blog</li>
+						<li><a target="_blank" href="http://developer.yahoo.net/blog/archives/2010/04/xauth_oauth_and_yahoo_openid.html">XAuth, OAuth, and Yahoo! OpenID</a> - Yahoo! Developer Network</li>
+						<li><a target="_blank" href="http://googlesocialweb.blogspot.com/2010/04/simplifying-social-web-with-xauth.html">Simplifying the social web with XAuth</a> - Google Social Web</li>
+					</ul>
+				</div>
+			</div>
+			<div class="method">
+				<div class="name">What is XAuth?</div>
+				<div class="params">
+					<p>XAuth is an open platform for extending authenticated user services across the web. 
+			
+					<p>Participating services generate a browser token for each of their users. Publishers can then recognize when site visitors are logged in to those online services and present them with meaningful, relevant options.
+					<p>Users can choose to authenticate directly from the publisher site and use the service to share, interact with friends, or participate in the site's community. The XAuth Token can be anything, so services have the flexibility to define whatever level of access they choose. 
+			
+				</div>
+			</div>
+			<div class="method">
+				<div class="name">Benefits</div>
+				<div class="params">
+					<p>For site publishers, the multiple HTTP requests necessary to recognize every potential online service are slow and inefficient. XAuth provides a central domain (http://xauth.org) with a lightweight JavaScript library that can be accessed via a single HTTP request. 
+			
+					<p>Users are often presented with many social services when browsing a site. They likely only are interested in one or two. XAuth allows the user experience to be immediately relevant, so that they can easily access the services that are useful to them.
+			
+					<p>Service providers participating in XAuth can reach their existing userbase anywhere on the web without being buried in the deluge of other social services that may be available and competing for space on the publisher site. 
+			
+					<p>The service providers have complete control over the features they enable for the publisher site. The XAuth Token could be a single bit denoting the existence of an authenticated user, or it could be a session ID that passes public profile info via API calls from the publisher. 
+			
+					<p>Users can decide which services pass data to sites through XAuth. To view and modify any currently enabled browser XAuth tokens, go to <a href="/">xauth.org/</a>
+			
+				</div>
+			</div>
+
+			<div class="method">
+				<div class="name">Developing on XAuth</div>
+				<div class="params">
+					<p>Developers can view the XAuth specifications and explore XAuth calls at <a href="/spec/">xauth.org/spec/</a> </p>
+					<p>More Great Resources:</p>
+					<ul class="blogs">
+						<li><a target="_blank" href="http://googlecode.blogspot.com/2010/04/using-xauth-to-simplify-social-web.html">Using XAuth to simplify the social web</a> - Google Code Blog</li>
+						<li><a href="http://groups.google.com/group/xauth">XAuth Discussion Group</a> - Get Involved</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+	try {
+	var pageTracker = _gat._getTracker("UA-3931792-8");
+	pageTracker._setDomainName('.xauth.org');
+	pageTracker._trackPageview();
+	} catch(err) {}</script>	
+</body>
+</html>

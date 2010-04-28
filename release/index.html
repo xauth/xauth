@@ -1,0 +1,314 @@
+<!--
+	Copyright 2010 Meebo Inc.
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	    http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<!doctype html>
+<html>
+<head>
+<title>XAuth</title>
+<script type="text/javascript">
+if(document.domain == 'www.xauth.org') {
+	document.location.replace(document.location.href.replace('www.xauth.org', 'xauth.org'));
+}
+/**
+	XAuth Token Manager
+	
+	2010-04-14
+	First version of xauth manager code
+	-Jian Shen, Meebo
+**/
+
+function $(id) {
+	return document.getElementById(id);
+}
+
+var XAuthManager = (function() {
+	var supported = !!(window.postMessage && window.localStorage && window.JSON);
+	var disabled = ('1' == localStorage.getItem('disabled.xauth.org'));
+	
+	function setDisabled(disable) {
+		disabled = disable;
+		localStorage.setItem('disabled.xauth.org',disabled?'1':'0');
+	}
+	
+	function getToken(key) {
+		if(key == 'disabled.xauth.org') {
+			return null;
+		}
+		
+		var tokenStr = localStorage.getItem(key);
+		if(!tokenStr) {
+			return null;
+		}
+
+		var store = JSON.parse(tokenStr);
+		return store;
+	}
+
+	function saveToken(key, store) {
+		localStorage.setItem(key, JSON.stringify(store));
+	}
+
+	function updateStatus() {
+		var status = 'Enabled';
+		var disableButton = $('disable-button');
+		var showTokens = true;
+		if(!supported) {
+			status = '<span class="warning">Unsupported</span>';
+			disableButton.setAttribute('disabled','true');
+			showTokens = false;
+		} else if(disabled) {
+			status = '<span class="warning">Disabled</span>';
+			disableButton.innerHTML = 'Enable XAuth';
+			disableButton.removeAttribute('disabled');
+			showTokens = false;
+		} else {
+			disableButton.innerHTML = 'Disable XAuth';
+			disableButton.removeAttribute('disabled');
+		}
+		$('status').innerHTML = status;
+		$('tokens').style.display = showTokens?'block':'none';
+	}
+
+	function escapeHTML(str) {
+		if (!str || !str.length) { return str; }
+
+		var entities = {
+			'&': '&amp;',
+			'"': '&quot;',
+			'<': '&lt;',
+			'>': '&gt;'
+		};
+		
+		var re = /[&"<>]/g;
+		return str.replace(re, function (substr) { return entities[substr]; });
+	}
+
+	function getStatusHTML(id, store) {
+		var status = '';
+		if(store.token) {
+			status = '<span class="view" onclick="XAuthManager.showToken(\'' + id + '\')">Active Token</span>'
+				+ '<div class="token-view" id="token-' + id + '"><textarea readonly="readonly">' + escapeHTML(store.token) + '</textarea>Expiration: ' + (store.session?'End of browser session':escapeHTML(store.expire)) +  '</div>';
+		} else {
+			status = 'No Token'
+		} 
+		if(store.block) {
+			status = '<span class="blocked">Blocked</span>';
+		}
+		return status;
+	}
+
+
+	function getTokenRowHTML(id) {
+		var store = getToken(id);
+		if(!store) { return null; }
+		
+		return ('<td>' + id + '</td><td id="status-' + id + '">' + getStatusHTML(id, store) + '</td><td>' 
+			+ '<button onclick="XAuthManager.deleteToken(\'' + id + '\')">Delete</button>&nbsp;' 
+			+ '<button id="blockbutton-' + id + '" onclick="XAuthManager.toggleBlock(\'' + id + '\')">' + (store.block?'Unblock':'Block') + '</button>' 
+			+ '</td>');	
+	}
+
+	function toggleXAuth() {
+		setDisabled(!disabled);
+		updateStatus();
+	}
+
+	function toggleBlock(id) {
+		var store = getToken(id);
+		if(!store) { return; }
+		if(store.block) {
+			delete store.block;
+		} else {
+			store.block = 1;
+		}
+		saveToken(id, store);
+		$('blockbutton-' + id).innerHTML = (store.block?'Unblock':'Block');
+
+		$('status-' + id).innerHTML = getStatusHTML(id, store);
+	}
+
+	function deleteToken(id) {
+		localStorage.removeItem(id);
+		var row = $('row-' + id);
+		row.parentNode.removeChild(row);
+	}
+	
+	function showToken(id) {
+		$('token-' + id).style.display = 'block';
+	}
+
+	function listTokens() {
+		var tableStr = '<table class="tokens"><tbody>';
+		tableStr += '<tr><th>Extender Domain</th><th class="status-column">Status</th><th class="action-column">Actions</th>';
+	
+		for(var i=0; i<localStorage.length; i++) {
+			var key = localStorage.key(i);
+			var html = getTokenRowHTML(key);
+			if(html) {
+				tableStr += ('<tr id="row-' + key + '">' + html + '</tr>');
+			}
+		}
+
+		tableStr += '</tbody></table>';
+
+		document.getElementById('tokens').innerHTML = tableStr;
+	}
+
+	function init() {
+		updateStatus();
+		listTokens();
+	}
+
+	return {
+		init: init,
+		toggleXAuth: toggleXAuth,
+		toggleBlock: toggleBlock,
+		deleteToken: deleteToken,
+		showToken: showToken
+	}
+
+})();
+
+</script>
+<style>
+body {
+	padding: 0 30px;
+	margin: 0;
+	font-family: "Helvetica Neue", Helvetica, Arial;
+}
+
+.body {
+	width: 1000px;
+	margin: auto;
+}
+
+button {
+	font-size: 12px;
+}
+
+.navigation {
+	margin-right: 20px;
+	float: left;
+	line-height: 1.5em;
+	padding: 0 20px 20px;
+	background: #EEE;
+}
+
+.navigation ul {
+	padding: 0;
+	margin: 0;
+}
+
+.navigation li {
+	display: block;
+}
+
+.content {
+	float: left;
+	width: 800px;
+}
+
+.panel {
+	margin: 40px 0;
+}
+
+.view:hover {
+	text-decoration: underline;
+	color: #009;
+	cursor: pointer;
+}
+
+.blocked {
+	color: #999;
+}
+
+.warning {
+	color: #FFF;
+	background: #A00;
+	padding: 4px;
+	border-radius: 0.3em;
+}
+
+.token-view {
+	display: none;
+}
+
+.token-view textarea {
+	width: 100%;
+	height: 4em;
+}
+
+table {
+	border: 1px solid #CCC;
+	width: 100%;
+}
+
+table td, table th {
+	vertical-align: top;
+	line-height: 1.5em;
+	padding: 10px;
+	background: #EEE;
+	text-align: center;
+}
+
+th.status-column {
+	width: 300px;
+}
+
+th.action-column {
+	width: 150px;
+}
+
+.rightheader {
+	display: block;
+	float: right;
+	text-align: right;
+}
+</style>
+</head>
+<body onload="XAuthManager.init()">
+	<div class="body">
+		<div class="navigation">
+			<h2>XAuth</h2>
+			<ul>
+				<li><a href="/">Manage</a></li>
+				<li><a href="/info">Information</a></li>
+				<li><a href="/spec">Specification</a></li>
+			</ul>
+		</div>
+		<div class="content">
+			<h2>Manage Browser Settings</h2>
+			<p>See and manage XAuth Extenders for this browser.</p>
+			<div id="status-panel" class="panel">
+				<table><tbody>
+					<tr><th colspan="3">XAuth is <span id="status">Enabled</span> in this browser</th>
+						<th class='action-column'><button id="disable-button" onclick="XAuthManager.toggleXAuth()">Disable XAuth</button></th>
+					</tr>
+				</tbody></table>
+			</div>
+			<div id="tokens" class="panel"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+	try {
+	var pageTracker = _gat._getTracker("UA-3931792-8");
+	pageTracker._trackPageview();
+	} catch(err) {}</script>
+</body>
+</html>
