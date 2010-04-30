@@ -81,7 +81,7 @@
 		
 			// Validate and clean token
 			if(!requestObj.token) {
-				logError(requestObj, 'Invalid', origin);
+				logError(requestObj, 'Invalid', originHostname);
 				return null;
 			}
 			requestObj.token = String(requestObj.token).substr(0,1024); // We cast to String for tokens that are 1's or 0's
@@ -90,13 +90,13 @@
 			requestObj.expire = Number(requestObj.expire); // Cast to numeric timestamp
 			var dateCheck = new Date(requestObj.expire);
 			if(dateCheck < new Date()) { // If you pass garbage into the date, this will be false
-				logError(requestObj, 'Invalid Expiration', origin);
+				logError(requestObj, 'Invalid Expiration', originHostname);
 				return null;
 			}
 
 			// Validate extend list
 			if(!requestObj.extend || !requestObj.extend.length) {
-				logError(requestObj, 'No Extend List Specified', origin);
+				logError(requestObj, 'No Extend List Specified', originHostname);
 				return null;
 			}
 
@@ -132,7 +132,7 @@
 		**/
 		'xauth::retrieve': function(originHostname, requestObj) {
 			if(!requestObj.retrieve || !requestObj.retrieve.length) {
-				logError(requestObj, 'No Retrieve List Requested', origin);
+				logError(requestObj, 'No Retrieve List Requested', originHostname);
 				return null;
 			}
 		
@@ -200,7 +200,7 @@
 		help with debugging issues
 		We can eventually toggle this using a debug.xauth.org store
 	**/
-	function logError(requestObj, message, origin) {
+	function logError(requestObj, message, originHostname) {
 		if(!requestObj || (typeof requestObj.id != 'number') ) {
 			return;
 		}
